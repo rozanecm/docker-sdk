@@ -17,4 +17,5 @@ main.main()
 	/go/src/app/main.go:19 +0x2b9
 ```
 Acá es donde entra en juego [el primer artículo que mencioné](https://devopscube.com/run-docker-in-docker/): siguiendo el primero de los 3 métodos presentados, le agregué a docker run el flag `-v /var/run/docker.sock:/var/run/docker.sock`. Con ese flag ya no tuve ningún error, pero tampoco input, lo que era esperable porque no había otros contenedores corriendo (docker ps no listaba ningún contenedor). Luego de dejar corriendo una terminal de ubuntu desde docker, volví a correr el container de Go, y listó el container de ubuntu según lo esperado.
+
 3. El próximo paso es levantar algún container desde este programita...
