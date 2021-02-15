@@ -1,0 +1,35 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  node1:
+    build: .
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    container_name: node1
+    image: node1
+    environment:
+        - ID=1
+  node2:
+    build: .
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    container_name: node2
+    image: node2
+    environment:
+        - ID=2
+  node3:
+    build: .
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    container_name: node3
+    image: node3
+    environment:
+        - ID=3
+  node4:
+    build: .
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    container_name: node4
+    image: node4
+    environment:
+        - ID=4
+
