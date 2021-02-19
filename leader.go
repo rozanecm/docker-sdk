@@ -1,24 +1,43 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"github.com/jasonlvhit/gocron"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
 func leaderTasks() {
-	nodes := initNodesInfo(getNodesToCheckNames())
+	nodeNames, err := getNodesToCheckNames("nodes.cfg")
+	if err != nil{
+		return
+	}
+	nodes := initNodesInfo(nodeNames)
 	gocron.Start()
 	_ = gocron.Every(5).Second().Do(routineCheck, nodes)
 	initHttpServer(&nodes)
 }
 
-func getNodesToCheckNames() []string {
+func getNodesToCheckNames(path string) ([]string, error) {
 	//TODO get this from file
-	return []string{"node2", "node3", "node4"}
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Printf("Error reading file: %s", err)
+		return nil, err
+	}
+	defer file.Close()
+
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines, scanner.Err()
+	//return []string{"node2", "node3", "node4"}
 }
 
 func initNodesInfo(nodeNames []string) map[string]int64 {
@@ -28,7 +47,6 @@ func initNodesInfo(nodeNames []string) map[string]int64 {
 	}
 	return nodes
 }
-
 
 func routineCheck(nodes map[string]int64) {
 	for containerName, timestamp := range nodes {
@@ -47,7 +65,7 @@ func initHttpServer(nodes *map[string]int64) {
 }
 
 func heartbeatHandler(nodes *map[string]int64) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request * http.Request) {
+	return func(writer http.ResponseWriter, request *http.Request) {
 		type ExpectedResponse struct {
 			Id string `json:"Id"`
 		}
