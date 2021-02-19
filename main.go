@@ -9,11 +9,13 @@ const thresholdInSeconds = 5
 
 func main() {
 	myId := os.Getenv("ID")
-	fmt.Printf("My Id: %s\n", myId)
+	fmt.Printf("My Name: %s\n", myId)
 	if iAmLeader(myId) {
 		leaderTasks()
 	} else {
-		noLeaderTasks(myId)
+		nodeName := "node" + myId
+		leaderName := "node1"
+		noLeaderTasks(nodeName, leaderName)
 	}
 }
 

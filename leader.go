@@ -67,7 +67,7 @@ func initHttpServer(nodes *map[string]int64) {
 func heartbeatHandler(nodes *map[string]int64) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		type ExpectedResponse struct {
-			Id string `json:"Id"`
+			Name string `json:"Name"`
 		}
 		var eR ExpectedResponse
 		// Try to decode the request body into the struct. If there is an error,
@@ -78,7 +78,7 @@ func heartbeatHandler(nodes *map[string]int64) http.HandlerFunc {
 			return
 		}
 		nodesCopy := *nodes
-		nodesCopy[eR.Id] = time.Now().Unix()
+		nodesCopy[eR.Name] = time.Now().Unix()
 		*nodes = nodesCopy
 		fmt.Printf("Nodes after update: %v\n", *nodes)
 	}

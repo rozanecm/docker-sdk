@@ -8,17 +8,20 @@ import (
 	"net/http"
 )
 
-func noLeaderTasks(myId string) {
-	values := map[string]string{"Id": "node" + myId}
-	jsonValue, _ := json.Marshal(values)
+func noLeaderTasks(nodeName string, leaderName string) {
+	msg := map[string]string{"Name": nodeName}
+	msgJSON, _ := json.Marshal(msg)
 	gocron.Start()
-	_ = gocron.Every(1).Second().Do(sendHeartbeat, jsonValue)
+	_ = gocron.Every(1).Second().Do(sendHeartbeat, msgJSON, leaderName)
 	for {
 	}
 }
 
-func sendHeartbeat(jsonValue []byte) {
-	_, err := http.Post("http://node1:8080/heartbeat", "application/json", bytes.NewBuffer(jsonValue))
+func sendHeartbeat(jsonValue []byte, leaderName string) {
+	url := "http://" + leaderName + ":8080/heartbeat"
+	_, err := http.Post(url,
+		"application/json",
+		bytes.NewBuffer(jsonValue))
 	if err != nil {
 		fmt.Printf("an error occurred during POST request: %s\n", err)
 	}
