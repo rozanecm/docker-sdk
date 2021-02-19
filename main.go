@@ -17,12 +17,11 @@ const thresholdInSeconds = 5
 
 func main() {
 	myId := os.Getenv("ID")
-	nodes := initNodesInfo([]string{"node1","node2","node3","node4"})
 	fmt.Printf("My Id: %s\n", myId)
 	if iAmLeader(myId) {
-		var idsToCheck = getIDsToCheck()
+		nodes := initNodesInfo([]string{"node2","node3","node4"})
 		gocron.Start()
-		_ = gocron.Every(5).Second().Do(routineCheck, idsToCheck, nodes)
+		_ = gocron.Every(5).Second().Do(routineCheck, nodes)
 		initHttpServer(&nodes)
 	} else {
 		values := map[string]string{"Id": "node" + myId}
@@ -32,11 +31,6 @@ func main() {
 		for {
 		}
 	}
-}
-
-func getIDsToCheck() []string {
-	//TODO leer de archivo de conf.
-	return []string{"node2", "node3", "node4"}
 }
 
 func sendHeartbeat(jsonValue []byte) {
@@ -85,21 +79,13 @@ func iAmLeader(id string) bool {
 	return id == "1"
 }
 
-func routineCheck(ids []string, nodes map[string]int64) {
-	for _, currentID := range ids {
-		fmt.Printf("checking container: %s\n", currentID)
-		if notRunning(currentID, nodes) {
-			fmt.Printf("Container %s detected as not running\n", currentID)
-			startContainer(currentID)
-			fmt.Printf("started container %s\n", currentID)
+func routineCheck(nodes map[string]int64) {
+	for containerName, timestamp := range nodes {
+		fmt.Printf("checking container: %s\n", containerName)
+		if timestamp < (time.Now().Unix() - thresholdInSeconds) {
+			fmt.Printf("Container %s detected as not running\n", containerName)
+			startContainer(containerName)
+			fmt.Printf("started container %s\n", containerName)
 		}
 	}
-}
-
-func notRunning(container string, containers map[string]int64) bool {
-	fmt.Printf("Checking node %s. Nodes time: %d; threshold: %d\n",
-		container,
-		containers[container],
-		time.Now().Unix() - thresholdInSeconds)
-	return containers[container] < (time.Now().Unix() - thresholdInSeconds)
 }
