@@ -19,18 +19,26 @@ func main() {
 	myId := os.Getenv("ID")
 	fmt.Printf("My Id: %s\n", myId)
 	if iAmLeader(myId) {
-		nodes := initNodesInfo([]string{"node2","node3","node4"})
-		gocron.Start()
-		_ = gocron.Every(5).Second().Do(routineCheck, nodes)
-		initHttpServer(&nodes)
+		leaderTasks()
 	} else {
-		values := map[string]string{"Id": "node" + myId}
-		jsonValue, _ := json.Marshal(values)
-		gocron.Start()
-		_ = gocron.Every(1).Second().Do(sendHeartbeat, jsonValue)
-		for {
-		}
+		noLeaderTasks(myId)
 	}
+}
+
+func noLeaderTasks(myId string) {
+	values := map[string]string{"Id": "node" + myId}
+	jsonValue, _ := json.Marshal(values)
+	gocron.Start()
+	_ = gocron.Every(1).Second().Do(sendHeartbeat, jsonValue)
+	for {
+	}
+}
+
+func leaderTasks() {
+	nodes := initNodesInfo([]string{"node2","node3","node4"})
+	gocron.Start()
+	_ = gocron.Every(5).Second().Do(routineCheck, nodes)
+	initHttpServer(&nodes)
 }
 
 func sendHeartbeat(jsonValue []byte) {
@@ -66,11 +74,10 @@ func heartbeatHandler(nodes *map[string]int64) http.HandlerFunc {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		fmt.Printf("Nodes before: %v\n", *nodes)
 		nodesCopy := *nodes
 		nodesCopy[eR.Id] = time.Now().Unix()
 		*nodes = nodesCopy
-		fmt.Printf("Nodes after: %v\n", *nodes)
+		fmt.Printf("Nodes after update: %v\n", *nodes)
 	}
 }
 
