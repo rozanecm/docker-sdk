@@ -1,0 +1,31 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
+)
+
+func startContainer(name string) {
+	name = name[1:]
+	fmt.Printf("About to start container: %s\n", name)
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		panic(err)
+	}
+
+	/*
+	    resp, err := cli.ContainerCreate(ctx, &container.Config{
+	       Image: name,
+	   }, nil, nil, nil, name)
+	   if err != nil {
+	       panic(err)
+	   }
+	*/
+
+	if err := cli.ContainerStart(ctx, name, types.ContainerStartOptions{}); err != nil {
+		panic(err)
+	}
+}

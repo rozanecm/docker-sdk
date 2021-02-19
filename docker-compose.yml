@@ -8,6 +8,8 @@ services:
     image: node1
     environment:
         - ID=1
+    ports:
+        - "8080:8080"
   node2:
     build: .
     volumes:
