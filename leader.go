@@ -1,43 +1,30 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"github.com/jasonlvhit/gocron"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
 func leaderTasks() {
-	nodeNames, err := getNodesToCheckNames("nodes.cfg")
-	if err != nil{
-		return
-	}
+	nodeNames := getNodesToControlNames()
 	nodes := initNodesInfo(nodeNames)
 	gocron.Start()
 	_ = gocron.Every(5).Second().Do(routineCheck, nodes)
 	initHttpServer(&nodes)
 }
 
-func getNodesToCheckNames(path string) ([]string, error) {
-	//TODO get this from file
-	file, err := os.Open(path)
-	if err != nil {
-		fmt.Printf("Error reading file: %s", err)
-		return nil, err
-	}
-	defer file.Close()
-
-	var lines []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	return lines, scanner.Err()
-	//return []string{"node2", "node3", "node4"}
+func getNodesToControlNames() []string {
+	nodesToControl := os.Getenv("NODES_TO_CONTROL")
+	nodesToControl = strings.ReplaceAll(nodesToControl, "\"", "")
+	nodesToControlList := strings.Split(nodesToControl, " ")
+	fmt.Printf("Nodes to control: %s\n", nodesToControlList)
+	return nodesToControlList
 }
 
 func initNodesInfo(nodeNames []string) map[string]int64 {

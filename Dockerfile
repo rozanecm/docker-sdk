@@ -31,11 +31,10 @@ COPY . .
 RUN CGO_ENABLED=0 go build -o ./out/go-sample-app .
 
 # Start fresh from a smaller image
-FROM alpine:3.9 
+FROM alpine:3.9
 #RUN apk add ca-certificates
 
 COPY --from=build_base /tmp/go-sample-app/out/go-sample-app /app/go-sample-app
-COPY nodes.cfg .
 
 # This container exposes port 8080 to the outside world
 EXPOSE 8080
