@@ -2,23 +2,17 @@ package main
 
 import (
 	"fmt"
+	"github.com/jasonlvhit/gocron"
 	"os"
 )
 
-const thresholdInSeconds = 5
+const interval = 5
 
 func main() {
 	myId := os.Getenv("ID")
 	fmt.Printf("My Name: %s\n", myId)
 	initHttpServer()
-	if iAmLeader(myId) {
-		leaderTasks()
-	} else {
-		for{}
-	}
-}
-
-func iAmLeader(id string) bool {
-	//TODO hacer esto como corresponde
-	return id == "1"
+	gocron.Start()
+	_ = gocron.Every(interval).Second().Do(routineCheck, getNamesOfNodesToControl(), myId)
+	for{}
 }

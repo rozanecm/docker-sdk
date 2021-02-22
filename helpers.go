@@ -2,23 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/jasonlvhit/gocron"
 	"net/http"
 	"os"
 	"strings"
 )
 
-func leaderTasks() {
-	nodeNames := getNodesToControlNames()
-	//nodes := initNodesInfo(nodeNames)
-	gocron.Start()
-	_ = gocron.Every(5).Second().Do(routineCheck, nodeNames)
-	//initHttpServer(&nodes)
-	for {
-	}
-}
-
-func getNodesToControlNames() []string {
+func getNamesOfNodesToControl() []string {
 	nodesToControl := os.Getenv("NODES_TO_CONTROL")
 	nodesToControl = strings.ReplaceAll(nodesToControl, "\"", "")
 	nodesToControlList := strings.Split(nodesToControl, " ")
@@ -26,7 +15,15 @@ func getNodesToControlNames() []string {
 	return nodesToControlList
 }
 
-func routineCheck(nodeNames []string) {
+func iAmLeader(id string) bool {
+	//TODO hacer esto como corresponde
+	return id == "1"
+}
+
+func routineCheck(nodeNames []string, myId string) {
+	if !iAmLeader(myId){
+		return
+	}
 	for _, containerName := range nodeNames {
 		fmt.Printf("checking container: %s\n", containerName)
 		currentURL := "http://" + containerName + ":8080/statusCheck"
