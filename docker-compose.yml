@@ -19,6 +19,7 @@ services:
     image: node2
     environment:
         - ID=2
+        - NODES_TO_CONTROL="node1 node2 node3 node4"
   node3:
     build: .
     volumes:
@@ -27,6 +28,7 @@ services:
     image: node3
     environment:
         - ID=3
+        - NODES_TO_CONTROL="node1 node2 node3 node4"
   node4:
     build: .
     volumes:
@@ -35,4 +37,4 @@ services:
     image: node4
     environment:
         - ID=4
-
+        - NODES_TO_CONTROL="node1 node2 node3 node4"
