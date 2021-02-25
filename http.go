@@ -12,7 +12,6 @@ func initHttpServer(leader *string) {
 	http.HandleFunc("/statusCheck", statusCheckHandler)
 	http.HandleFunc("/election", electionHandler(leader))
 	http.HandleFunc("/leader", leaderHandler(leader))
-	http.HandleFunc("/test", testHandler)
 	go func() { log.Fatal(http.ListenAndServe(":8080", nil)) }()
 }
 
@@ -21,24 +20,6 @@ func statusCheckHandler(writer http.ResponseWriter, request *http.Request) {
 	msgJSON, _ := json.Marshal(msg)
 	writer.WriteHeader(200)
 	_, _ = writer.Write(msgJSON)
-}
-
-func testHandler(writer http.ResponseWriter, request *http.Request) {
-	/* Test to receive som random env var
-	 * to see if they are available when a node is restarted.
-	 */
-	type ExpectedResponse struct {
-		Msg string `json:"First node to control"`
-	}
-	var eR ExpectedResponse
-	// Try to decode the request body into the struct. If there is an error,
-	// respond to the client with the error message and a 400 status code.
-	err := json.NewDecoder(request.Body).Decode(&eR)
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
-		return
-	}
-	fmt.Printf("**** -> New test msg received: %s \n", eR.Msg)
 }
 
 func electionHandler(leader *string) http.HandlerFunc {
