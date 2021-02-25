@@ -61,7 +61,7 @@ func announceNewLeadership(controlSystemNodeNames []string) {
 		fmt.Printf("Announcing new leader to %s\n", node)
 		_, err := http.Post(url, "application/json", bytes.NewBuffer(msgJSON))
 		if err != nil {
-			fmt.Printf("Error sending leader: %s\n", err)
+			//fmt.Printf("Error sending leader: %s\n", err)
 		}
 
 	}
