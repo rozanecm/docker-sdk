@@ -23,11 +23,11 @@ func getControlSystemNodeNames() []string {
 	return controlSystemNodesList
 }
 
-func iAmLeader(leader string) bool {
-	return os.Getenv("NAME") == leader
+func iAmLeader(leader *string) bool {
+	return os.Getenv("NAME") == *leader
 }
 
-func routineCheck(nodeNames []string, controlSystemNodeNames []string, leader string) {
+func routineCheck(nodeNames []string, controlSystemNodeNames []string, leader *string) {
 	if iAmLeader(leader) {
 		leaderRoutineCheck(nodeNames)
 	} else {
@@ -35,14 +35,13 @@ func routineCheck(nodeNames []string, controlSystemNodeNames []string, leader st
 	}
 }
 
-func nonLeaderRoutineCheck(leader string) {
-	currentURL := "http://" + leader + ":8080/statusCheck"
+func nonLeaderRoutineCheck(leader *string) {
+	currentURL := "http://" + *leader + ":8080/statusCheck"
 	_, err := http.Get(currentURL)
 	if err != nil {
 		//fmt.Printf("error detected: %s", err)
-		fmt.Printf("Leader %s detected as not running\n", leader)
-		startContainer(leader)
-		fmt.Printf("started container %s\n", leader)
+		fmt.Printf("Leader %s detected as not running\n", *leader)
+		election(leader)
 	}
 }
 

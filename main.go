@@ -15,7 +15,7 @@ func main() {
 	initHttpServer(&leader)
 	election(&leader)
 	gocron.Start()
-	_ = gocron.Every(interval).Second().Do(routineCheck, getNamesOfNodesToControl(), getControlSystemNodeNames(), leader)
+	_ = gocron.Every(interval).Second().Do(routineCheck, getNamesOfNodesToControl(), getControlSystemNodeNames(), &leader)
 	for {
 	}
 }
