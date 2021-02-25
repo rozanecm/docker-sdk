@@ -8,10 +8,10 @@ import (
 	"os"
 )
 
-func initHttpServer(iAmLeader *bool) {
+func initHttpServer(leader *string) {
 	http.HandleFunc("/statusCheck", statusCheckHandler)
-	http.HandleFunc("/election", electionHandler(iAmLeader))
-	http.HandleFunc("/leader", leaderHandler(iAmLeader))
+	http.HandleFunc("/election", electionHandler(leader))
+	http.HandleFunc("/leader", leaderHandler(leader))
 	http.HandleFunc("/test", testHandler)
 	go func() { log.Fatal(http.ListenAndServe(":8080", nil)) }()
 }
@@ -41,15 +41,14 @@ func testHandler(writer http.ResponseWriter, request *http.Request) {
 	fmt.Printf("**** -> New test msg received: %s \n", eR.Msg)
 }
 
-func electionHandler(iAmLeader *bool) http.HandlerFunc {
+func electionHandler(leader *string) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		fmt.Println("election msg received.")
-		election(iAmLeader)
+		election(leader)
 	}
-
 }
 
-func leaderHandler(iAmLeader *bool) http.HandlerFunc {
+func leaderHandler(leader *string) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		fmt.Println("&&&&&&&&&&&&&&&&&&&&& leader msg received.")
 		type ExpectedResponse struct {
@@ -63,11 +62,11 @@ func leaderHandler(iAmLeader *bool) http.HandlerFunc {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		fmt.Printf("**** -> New leader received: %s %s \n", eR.Leader, eR)
-		*iAmLeader = false
+		fmt.Printf("**** -> New leader received: %s\n", eR.Leader)
+		*leader = eR.Leader
 		if eR.Leader < os.Getenv("NAME") {
 			fmt.Println("-> Someone wants to be leader, but I should be!")
-			election(iAmLeader)
+			election(leader)
 		}
 	}
 }

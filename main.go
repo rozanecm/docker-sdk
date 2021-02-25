@@ -11,11 +11,11 @@ const interval = 5
 
 func main() {
 	test()
-	iAmLeader := false
-	initHttpServer(&iAmLeader)
-	election(&iAmLeader)
+	leader := ""
+	initHttpServer(&leader)
+	election(&leader)
 	gocron.Start()
-	_ = gocron.Every(interval).Second().Do(routineCheck, getNamesOfNodesToControl(), getControlSystemNodeNames(), iAmLeader)
+	_ = gocron.Every(interval).Second().Do(routineCheck, getNamesOfNodesToControl(), getControlSystemNodeNames(), leader)
 	for {
 	}
 }

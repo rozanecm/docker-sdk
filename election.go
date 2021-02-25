@@ -9,11 +9,11 @@ import (
 	"time"
 )
 
-func election(iAmLeader *bool) {
+func election(leader *string) {
 	iAmNewLeader := startElection(getControlSystemNodeNames())
 	if iAmNewLeader {
 		fmt.Printf("%d - I, %s, am new leader\n", time.Now().UnixNano(), os.Getenv("NAME"))
-		*iAmLeader = true
+		*leader = os.Getenv("NAME")
 		announceNewLeadership(getControlSystemNodeNames())
 	}
 }

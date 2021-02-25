@@ -23,10 +23,30 @@ func getControlSystemNodeNames() []string {
 	return controlSystemNodesList
 }
 
-func routineCheck(nodeNames []string, controlSystemNodeNames []string, iAmLeader bool) {
-	if !iAmLeader {
-		return
+func iAmLeader(leader string) bool {
+	return os.Getenv("NAME") == leader
+}
+
+func routineCheck(nodeNames []string, controlSystemNodeNames []string, leader string) {
+	if iAmLeader(leader) {
+		leaderRoutineCheck(nodeNames)
+	} else {
+		nonLeaderRoutineCheck(leader)
 	}
+}
+
+func nonLeaderRoutineCheck(leader string) {
+	currentURL := "http://" + leader + ":8080/statusCheck"
+	_, err := http.Get(currentURL)
+	if err != nil {
+		//fmt.Printf("error detected: %s", err)
+		fmt.Printf("Leader %s detected as not running\n", leader)
+		startContainer(leader)
+		fmt.Printf("started container %s\n", leader)
+	}
+}
+
+func leaderRoutineCheck(nodeNames []string) {
 	for _, containerName := range nodeNames {
 		if containerName == os.Getenv("NAME") {
 			continue
