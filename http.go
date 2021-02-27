@@ -6,12 +6,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 )
 
-func initHttpServer(leader *string) {
+func initHttpServer(leader *string, m *sync.Mutex) {
 	http.HandleFunc("/statusCheck", statusCheckHandler)
-	http.HandleFunc("/election", electionHandler(leader))
-	http.HandleFunc("/leader", leaderHandler(leader))
+	http.HandleFunc("/election", electionHandler(leader, m))
+	http.HandleFunc("/leader", leaderHandler(leader, m))
 	go func() { log.Fatal(http.ListenAndServe(":8080", nil)) }()
 }
 
@@ -22,14 +23,14 @@ func statusCheckHandler(writer http.ResponseWriter, request *http.Request) {
 	_, _ = writer.Write(msgJSON)
 }
 
-func electionHandler(leader *string) http.HandlerFunc {
+func electionHandler(leader *string, m *sync.Mutex) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		fmt.Println("election msg received.")
-		election(leader)
+		election(leader, m)
 	}
 }
 
-func leaderHandler(leader *string) http.HandlerFunc {
+func leaderHandler(leader *string, m *sync.Mutex) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		fmt.Println("&&&&&&&&&&&&&&&&&&&&& leader msg received.")
 		type ExpectedResponse struct {
@@ -44,10 +45,12 @@ func leaderHandler(leader *string) http.HandlerFunc {
 			return
 		}
 		fmt.Printf("**** -> New leader received: %s\n", eR.Leader)
+		m.Lock()
 		*leader = eR.Leader
+		m.Unlock()
 		if eR.Leader < os.Getenv("NAME") {
 			fmt.Println("-> Someone wants to be leader, but I should be!")
-			election(leader)
+			election(leader, m)
 		}
 	}
 }

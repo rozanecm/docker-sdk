@@ -6,15 +6,22 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
-func election(leader *string) {
+func election(leader *string, m *sync.Mutex) {
 	iAmNewLeader := startElection(getControlSystemNodeNames())
 	if iAmNewLeader {
 		fmt.Printf("%d - I, %s, am new leader\n", time.Now().UnixNano(), os.Getenv("NAME"))
-		*leader = os.Getenv("NAME")
+		/* It's important to first announce new leadership.
+		 * This way, if there's another node which thinks it should be the leader,
+		 * it can immediately start new election, and this node won't be leader then.
+		 * */
 		announceNewLeadership(getControlSystemNodeNames())
+		m.Lock()
+		*leader = os.Getenv("NAME")
+		m.Unlock()
 	}
 }
 

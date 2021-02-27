@@ -4,23 +4,26 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 )
 
-func routineCheck(nodeNames []string, controlSystemNodeNames []string, leader *string) {
-	if iAmLeader(leader) {
+func routineCheck(nodeNames []string, controlSystemNodeNames []string, leader *string, m *sync.Mutex) {
+	if iAmLeader(leader, m) {
+		m.Lock()
 		leaderRoutineCheck(nodeNames)
+		m.Unlock()
 	} else {
-		nonLeaderRoutineCheck(leader)
+		nonLeaderRoutineCheck(leader, m)
 	}
 }
 
-func nonLeaderRoutineCheck(leader *string) {
+func nonLeaderRoutineCheck(leader *string, m *sync.Mutex) {
 	currentURL := "http://" + *leader + ":8080/statusCheck"
 	_, err := http.Get(currentURL)
 	if err != nil {
 		//fmt.Printf("error detected: %s", err)
 		fmt.Printf("Leader %s detected as not running\n", *leader)
-		election(leader)
+		election(leader, m)
 	}
 }
 

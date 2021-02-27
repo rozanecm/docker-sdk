@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"strings"
+	"sync"
 )
 
 func getNamesOfNodesToControl() []string {
@@ -21,6 +22,9 @@ func getControlSystemNodeNames() []string {
 	return controlSystemNodesList
 }
 
-func iAmLeader(leader *string) bool {
-	return os.Getenv("NAME") == *leader
+func iAmLeader(leader *string, m *sync.Mutex) bool {
+	m.Lock()
+	res :=  os.Getenv("NAME") == *leader
+	m.Unlock()
+	return res
 }
