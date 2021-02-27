@@ -9,11 +9,18 @@ import (
 	"sync"
 )
 
-func initHttpServer(leader *string, m *sync.Mutex) {
+func initHttpServer(leader *string, m *sync.Mutex, shutDown *bool) {
 	http.HandleFunc("/statusCheck", statusCheckHandler)
 	http.HandleFunc("/election", electionHandler(leader, m))
 	http.HandleFunc("/leader", leaderHandler(leader, m))
+	http.HandleFunc("/shutdown", shutDownHandler(shutDown))
 	go func() { log.Fatal(http.ListenAndServe(":8080", nil)) }()
+}
+
+func shutDownHandler(shutDown *bool) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request){
+		*shutDown = true
+	}
 }
 
 func statusCheckHandler(writer http.ResponseWriter, request *http.Request) {
